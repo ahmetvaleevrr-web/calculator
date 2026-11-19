@@ -372,7 +372,7 @@ let topColor = topColorInput.value || '';
 let bottomColor = bottomColorInput.value || '';
 
 // Ограничение 250 м² для ВСЕХ типов панелей
-if (areaM2 < 250 && areaM2 > 0) {
+if (areaM2 < 100 && areaM2 > 0) {
     // Если сообщение еще не отображается, меняем текст на случайный
     if (warningMessage.style.display !== 'block') {
         const phrase = getRandomWarning();
