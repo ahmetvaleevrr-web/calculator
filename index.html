@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Калькулятор металла для сэндвич-панелей</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+body { background: #f5f0eb; display: flex; justify-content: center; padding: 30px 20px; min-height: 100vh; align-items: center; }
+.container { max-width: 900px; width: 100%; background: #ffffff; border-radius: 40px; padding: 40px 38px; box-shadow: 0 20px 40px -12px rgba(0,0,0,0.2); border: 1px solid #e6ddd5; }
+.header { display: flex; align-items: center; gap: 14px; margin-bottom: 4px; flex-wrap: wrap; }
+.header .logo-icon { font-size: 2rem; font-weight: 700; color: #e65c1e; background: #1a1a1a; padding: 4px 16px 4px 14px; border-radius: 60px; letter-spacing: -0.5px; line-height: 1.2; }
+.header .logo-icon span { color: #ffffff; }
+.header .company-name { font-size: 1.5rem; font-weight: 700; color: #1a1a1a; letter-spacing: -0.3px; }
+.header .company-name .orange { color: #e65c1e; }
+.header .version-info { margin-left: auto; font-size: 0.8rem; font-weight: 600; color: #8a7e72; background: #fcf8f4; padding: 6px 14px; border-radius: 20px; border: 1px solid #e6ddd5; }
+.subhead { color: #1a1a1a; font-size: 0.95rem; padding-left: 18px; border-left: 4px solid #e65c1e; background: #fcf8f4; padding: 10px 18px; border-radius: 0 20px 20px 0; margin-bottom: 28px; margin-top: 4px; font-weight: 500; }
+.subhead .highlight { color: #e65c1e; font-weight: 700; }
+.warning-message { display: none; background: #fde8e8; border: 2px solid #e63e1e; color: #e63e1e; padding: 20px 26px; border-radius: 20px; font-weight: 700; font-size: 1.15rem; text-align: center; margin-bottom: 22px; letter-spacing: 0.2px; }
+.warning-message .warning-main { font-size: 1.2rem; margin-bottom: 8px; }
+.warning-message .warning-sub { font-size: 0.95rem; font-weight: 600; color: #b52a0f; border-top: 1px dashed #e63e1e; padding-top: 10px; margin-top: 6px; }
+.warning-message .warning-sub .highlight-num { color: #e63e1e; font-weight: 800; font-size: 1.05rem; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 30px; margin-bottom: 22px; }
+@media (max-width: 550px) {
+.grid-2 { grid-template-columns: 1fr; gap: 12px; }
+.container { padding: 24px 18px; border-radius: 24px; }
+.header .logo-icon { font-size: 1.4rem; padding: 4px 12px 4px 10px; }
+.header .company-name { font-size: 1.2rem; }
+.subhead { font-size: 0.85rem; padding: 8px 14px; }
+.warning-message { padding: 16px 18px; font-size: 1rem; }
+.warning-message .warning-main { font-size: 1.05rem; }
+.warning-message .warning-sub { font-size: 0.85rem; }
+.roll-divider { gap: 16px; }
+.roll-item { padding: 18px 16px; }
+.roll-item .roll-title { font-size: 1rem; }
+.roll-item .roll-result .value { font-size: 1.6rem; }
+.info-line { font-size: 0.75rem; padding: 8px 16px; }
+.badge-stop { font-size: 0.75rem; padding: 4px 12px; }
+}
+@media (max-width: 400px) {
+.header .logo-icon { font-size: 1.2rem; }
+.header .company-name { font-size: 1.1rem; }
+.roll-item .roll-result .value { font-size: 1.4rem; }
+.copy-block .copy-btn { width: 100%; }
+}
+@media (max-width: 700px) {
+    .header .version-info { margin-left: 0; width: 100%; text-align: center; margin-top: 8px; }
+}
+.field-group { display: flex; flex-direction: column; gap: 5px; }
+.field-group label { font-weight: 600; color: #1a1a1a; font-size: 0.9rem; letter-spacing: 0.2px; }
+.field-group label small { background: #f0e8e0; padding: 0 14px; border-radius: 30px; font-size: 0.7rem; font-weight: 600; color: #1a1a1a; }
+.field-group select, .field-group input { width: 100%; padding: 14px 18px; font-size: 1rem; border: 1.5px solid #d5cdc4; border-radius: 40px; background: white; outline: none; font-weight: 500; color: #1a1a1a; transition: 0.15s; -webkit-appearance: none; appearance: none; }
+.field-group select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23e65c1e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 18px center; background-size: 18px; }
+.field-group select:focus, .field-group input:focus { border-color: #e65c1e; box-shadow: 0 0 0 4px rgba(230, 92, 30, 0.12); }
+.field-group input::placeholder { color: #b5aaa0; }
+.roll-divider { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 6px 0 0 0; }
+@media (max-width: 550px) { .roll-divider { grid-template-columns: 1fr; gap: 16px; } }
+.roll-item { background: #fcf8f4; border-radius: 32px; padding: 22px 24px; border: 1px solid #e6ddd5; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.roll-item .roll-title { font-weight: 700; color: #1a1a1a; font-size: 1.1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.roll-item .roll-title .badge-roll { background: #1a1a1a; color: #ffffff; padding: 0 16px; border-radius: 30px; font-size: 0.7rem; font-weight: 600; }
+.roll-item .roll-title .badge-roll .orange { color: #e65c1e; }
+.roll-fields-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+@media (max-width: 400px) { .roll-fields-row { grid-template-columns: 1fr; gap: 10px; } }
+.roll-fields-row .roll-field { margin-bottom: 0; }
+.roll-item .roll-field label { font-size: 0.7rem; font-weight: 600; color: #8a7e72; text-transform: uppercase; letter-spacing: 0.3px; display: block; margin-bottom: 2px; }
+.roll-item .roll-field select, .roll-item .roll-field input { width: 100%; padding: 10px 14px; font-size: 0.9rem; border: 1.5px solid #d5cdc4; border-radius: 30px; background: white; outline: none; font-weight: 500; color: #1a1a1a; transition: 0.15s; -webkit-appearance: none; appearance: none; }
+.roll-item .roll-field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23e65c1e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: 14px; }
+.roll-item .roll-field select:focus, .roll-item .roll-field input:focus { border-color: #e65c1e; box-shadow: 0 0 0 3px rgba(230, 92, 30, 0.1); }
+.roll-item .roll-field input.invalid { border-color: #e63e1e; box-shadow: 0 0 0 3px rgba(230, 62, 30, 0.15); }
+.roll-item .roll-result { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 16px; margin-top: 6px; padding-top: 12px; border-top: 1px solid #e6ddd5; }
+.roll-item .roll-result .value { font-size: 2rem; font-weight: 700; color: #1a1a1a; }
+.roll-item .roll-result .value small { font-size: 0.9rem; font-weight: 500; color: #8a7e72; }
+.roll-item .roll-result .value-sm { font-size: 1.2rem; }
+@media (max-width: 400px) {
+.roll-item .roll-result .value { font-size: 1.6rem; }
+.roll-item .roll-result .value-sm { font-size: 1rem; }
+}
+.info-line { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 24px; background: #f5f0eb; padding: 10px 20px; border-radius: 60px; margin-top: 20px; font-size: 0.82rem; color: #4a3f35; }
+.info-line strong { color: #1a1a1a; }
+.info-line .accent { color: #e65c1e; font-weight: 600; }
+.badge-stop { background: #1a1a1a; color: #ffffff; padding: 4px 16px; border-radius: 40px; font-size: 0.8rem; font-weight: 600; }
+.badge-stop .orange-text { color: #e65c1e; }
+.useful-width-info { font-size: 0.7rem; color: #8a7e72; margin-top: 2px; }
+.copy-block { margin-top: 24px; padding-top: 20px; border-top: 2px solid #e6ddd5; }
+.copy-block .copy-label { font-weight: 600; color: #1a1a1a; font-size: 0.9rem; margin-bottom: 8px; }
+.copy-block .copy-textarea { width: 100%; padding: 14px 18px; font-size: 0.9rem; border: 1.5px solid #d5cdc4; border-radius: 20px; background: #fcf8f4; outline: none; font-weight: 400; color: #1a1a1a; resize: vertical; min-height: 160px; font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.6; }
+.copy-block .copy-textarea:focus { border-color: #e65c1e; }
+.copy-block .copy-btn { margin-top: 10px; background: #e65c1e; color: #ffffff; border: none; padding: 12px 32px; border-radius: 40px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: 0.15s; }
+.copy-block .copy-btn:hover:not(:disabled) { background: #cc4d0f; transform: scale(1.01); }
+.copy-block .copy-btn:active:not(:disabled) { transform: scale(0.97); }
+.copy-block .copy-btn:disabled { background: #b5aaa0; cursor: not-allowed; opacity: 0.6; }
+.copy-block .copy-btn.copied { background: #1a7a3a; }
+.copy-block .copy-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.copy-block .copy-status { font-size: 0.85rem; color: #8a7e72; margin-left: 8px; }
+.copy-block .copy-status.success { color: #1a7a3a; font-weight: 600; }
+.copy-block .copy-status.error { color: #e63e1e; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<div class="logo-icon"><span>СОФТ</span> ПАЙП</div>
+<div class="company-name">Калькулятор металла</div>
+<div class="version-info" id="versionInfo"></div>
+</div>
+<div class="subhead">
+<span class="highlight">Расчёт тоннажа металла с учётом <span class="highlight">Старт+Стоп</span></span>
+</div>
+<div class="warning-message" id="warningMessage">
+    <div class="warning-main" id="warningText">🚨 Коллеги, давайте без фанатизма!</div>
+    <div class="warning-sub" id="warningSub">В производство запускается заказ не меньше <span class="highlight-num">250 м²</span></div>
+</div>
+<div class="grid-2">
+<div class="field-group">
+<label>📐 Ширина рулона <small>мм</small></label>
+<select id="widthSelect">
+<option value="1250">1250 мм</option>
+<option value="1060">1060 мм</option>
+</select>
+</div>
+<div class="field-group">
+<label>📏 Площадь заказа <small>м²</small></label>
+<input type="number" id="areaInput" placeholder="например, 500" step="any" min="0" value="0">
+</div>
+<div class="field-group">
+<label>📋 Тип панели</label>
+<select id="panelTypeSelect">
+<option value="wall">Стеновая</option>
+<option value="roof">Кровельная</option>
+</select>
+</div>
+<div class="field-group">
+<label>📋 Класс панели</label>
+<select id="classSelect">
+<option value="gost1">ГОСТ-1</option>
+<option value="gost2">ГОСТ-2</option>
+<option value="tu">ТУ</option>
+</select>
+</div>
+<div class="field-group">
+<label>⚙️ Расход на Старт+Стоп <small>п.м</small></label>
+<input type="text" id="stopDisplay" readonly style="background: #f0ece6; color: #1a1a1a; cursor: default; font-weight: 600;">
+</div>
+</div>
+<div class="roll-divider">
+<div class="roll-item">
+<div class="roll-title">
+🔼 Ролик Верх
+<span class="badge-roll" id="rollTopWidth">1250 <span class="orange">мм</span></span>
+</div>
+<div class="roll-fields-row">
+<div class="roll-field">
+<label>Толщина металла</label>
+<select id="topThicknessSelect">
+<option value="0.45">0,45 мм</option>
+<option value="0.50" selected>0,50 мм</option>
+<option value="0.60">0,60 мм</option>
+<option value="0.70">0,70 мм</option>
+</select>
+</div>
+<div class="roll-field">
+<label>Цвет (4 цифры)</label>
+<input type="text" id="topColorInput" placeholder="например, 9003" maxlength="4">
+</div>
+</div>
+<div class="roll-result">
+<span class="value" id="rollTopWeight">0.00 <small>т</small></span>
+<span class="value value-sm" id="rollTopMeters">0 <small>п.м</small></span>
+</div>
+<div class="useful-width-info" id="rollTopUseful">Полезная ширина: 1250 мм</div>
+</div>
+<div class="roll-item">
+<div class="roll-title">
+🔽 Ролик Низ
+<span class="badge-roll" id="rollBottomWidth">1060 <span class="orange">мм</span></span>
+</div>
+<div class="roll-fields-row">
+<div class="roll-field">
+<label>Толщина металла</label>
+<select id="bottomThicknessSelect">
+<option value="0.45">0,45 мм</option>
+<option value="0.50" selected>0,50 мм</option>
+<option value="0.60">0,60 мм</option>
+<option value="0.70">0,70 мм</option>
+</select>
+</div>
+<div class="roll-field">
+<label>Цвет (4 цифры)</label>
+<input type="text" id="bottomColorInput" placeholder="например, 7024" maxlength="4">
+</div>
+</div>
+<div class="roll-result">
+<span class="value" id="rollBottomWeight">0.00 <small>т</small></span>
+<span class="value value-sm" id="rollBottomMeters">0 <small>п.м</small></span>
+</div>
+<div class="useful-width-info" id="rollBottomUseful">Полезная ширина: 1250 мм</div>
+</div>
+</div>
+<div class="info-line" style="justify-content: center; text-align: center;">
+<span>
+<span class="badge-stop">
+<span class="orange-text">⏺</span>
+Если объем заказа более 2501 п.м. по старт стопам уточнить у производства
+</span>
+</span>
+</div>
+<div class="copy-block">
+<div class="copy-label"> Результат для отправки в мессенджер</div>
+<textarea id="resultText" class="copy-textarea" readonly></textarea>
+<div class="copy-row">
+<button id="copyBtn" class="copy-btn" disabled>📋 Копировать результат</button>
+<span id="copyStatus" class="copy-status"></span>
+</div>
+</div>
+</div>
+<script>
+(function() {
+const widthSelect = document.getElementById('widthSelect');
+const areaInput = document.getElementById('areaInput');
+const panelTypeSelect = document.getElementById('panelTypeSelect');
+const classSelect = document.getElementById('classSelect');
+const stopDisplay = document.getElementById('stopDisplay');
+const topThicknessSelect = document.getElementById('topThicknessSelect');
+const bottomThicknessSelect = document.getElementById('bottomThicknessSelect');
+const topColorInput = document.getElementById('topColorInput');
+const bottomColorInput = document.getElementById('bottomColorInput');
+const rollTopWeight = document.getElementById('rollTopWeight');
+const rollTopMeters = document.getElementById('rollTopMeters');
+const rollTopWidth = document.getElementById('rollTopWidth');
+const rollTopUseful = document.getElementById('rollTopUseful');
+const rollBottomWeight = document.getElementById('rollBottomWeight');
+const rollBottomMeters = document.getElementById('rollBottomMeters');
+const rollBottomWidth = document.getElementById('rollBottomWidth');
+const rollBottomUseful = document.getElementById('rollBottomUseful');
+const resultText = document.getElementById('resultText');
+const copyBtn = document.getElementById('copyBtn');
+const copyStatus = document.getElementById('copyStatus');
+const warningMessage = document.getElementById('warningMessage');
+const DENSITY = 7.85;
+
+// ==========================================
+// ВЕРСИЯ И ДАТА РЕЛИЗА (меняйте вручную)
+// ==========================================
+const version = "1";
+const releaseDate = "19.11.26"; 
+document.getElementById('versionInfo').textContent = `ver. ${version} от ${releaseDate}`;
+// ==========================================
+
+// Массив с полными вариантами (заголовок + подпись)
+const warningPhrases = [
+    { main: "🚨 Коллеги, давайте без фанатизма!", sub: "Станок — не бездонный, а заказ слишком мал." },
+    { main: "🚨 Стоп-кран! Тормозим производство.", sub: "Для такого объема даже станок проснется не сразу." },
+    { main: "🚨 Одумайтесь, пока не поздно!", sub: "Мы, конечно, любим сложные задачи, но не настолько." },
+    { main: "🚨 Экономика заказа под угрозой!", sub: "Запускать станок ради пары метров — это смело, но мы так не работаем." },
+    { main: "🚨 Вы уверены, что это не ошибка?", sub: "Давайте не будем будить производство ради такого объема." },
+    { main: "🚨 Одумайтесь! Это же производство, а не песочница.", sub: "В производство запускается заказ не меньше 250 м²." }
+];
+
+function getRandomWarning() {
+    const randomIndex = Math.floor(Math.random() * warningPhrases.length);
+    return warningPhrases[randomIndex];
+}
+
+const stopTable = {
+wall: [
+{ min: 0,    max: 200,  value: 15 },
+{ min: 201,  max: 500,  value: 20 },
+{ min: 501,  max: 1000, value: 25 },
+{ min: 1001, max: 1500, value: 30 },
+{ min: 1501, max: 2500, value: 35 },
+{ min: 2501, max: Infinity, value: 40 }
+],
+roof: [
+{ min: 0,    max: 200,  value: 25 },
+{ min: 201,  max: 500,  value: 30 },
+{ min: 501,  max: 1000, value: 35 },
+{ min: 1001, max: 1500, value: 40 },
+{ min: 1501, max: 2500, value: 45 },
+{ min: 2501, max: Infinity, value: 50 }
+]
+};
+
+function getStopValue(panelType, volumePm) {
+const table = stopTable[panelType] || stopTable.wall;
+for (let row of table) {
+if (volumePm >= row.min && volumePm <= row.max) {
+return row.value;
+}
+}
+return 40;
+}
+
+function isValidColor(color) {
+if (!color || color.trim() === '') return false;
+return /^\d{4}$/.test(color.trim());
+}
+
+function getClassInfo(classValue) {
+switch(classValue) {
+case 'gost1':
+return { label: 'ГОСТ-1', zinc: 'Ц140' };
+case 'gost2':
+return { label: 'ГОСТ-2', zinc: 'нет' };
+case 'tu':
+return { label: 'ТУ', zinc: 'нет' };
+default:
+return { label: 'ГОСТ-1', zinc: 'Ц140' };
+}
+}
+
+function buildMessage(panelType, areaM2, stopPm, topWidthMm, topThickness, topColor, topTonnes, topMeters, bottomWidthMm, bottomThickness, bottomColor, bottomTonnes, bottomMeters, classValue) {
+const panelTypeStr = panelType === 'roof' ? 'Кровельная' : 'Стеновая';
+const topThickStr = topThickness.toFixed(2).replace('.', ',');
+const bottomThickStr = bottomThickness.toFixed(2).replace('.', ',');
+const topColorDisplay = topColor && topColor.trim() !== '' ? topColor.trim() : 'не указан';
+const bottomColorDisplay = bottomColor && bottomColor.trim() !== '' ? bottomColor.trim() : 'не указан';
+const classInfo = getClassInfo(classValue);
+const zincText = classInfo.zinc !== 'нет' ? `Цинкование: ${classInfo.zinc}` : 'Цинкование: нет';
+return `Арвет укажите пожалуйста цену металла.
+📋 Данные заказа:
+Тип панели: ${panelTypeStr}
+Класс панели: ${classInfo.label}
+${zincText}
+Площадь: ${areaM2} м²
+🔼 Ролик Верх (${topWidthMm} мм, ${topThickStr} мм, цвет: ${topColorDisplay})
+Вес: ${topTonnes.toFixed(2)} т
+П.м: ${topMeters.toFixed(2)} п.м
+🔽 Ролик Низ (${bottomWidthMm} мм, ${bottomThickStr} мм, цвет: ${bottomColorDisplay})
+Вес: ${bottomTonnes.toFixed(2)} т
+П.м: ${bottomMeters.toFixed(2)} п.м`;
+}
+
+function validateColors() {
+const topColor = topColorInput.value;
+const bottomColor = bottomColorInput.value;
+const topValid = isValidColor(topColor);
+const bottomValid = isValidColor(bottomColor);
+topColorInput.classList.toggle('invalid', !topValid && topColor.trim() !== '');
+bottomColorInput.classList.toggle('invalid', !bottomValid && bottomColor.trim() !== '');
+const allValid = topValid && bottomValid;
+copyBtn.disabled = !allValid;
+if (!allValid) {
+copyStatus.textContent = '⚠️ Укажите корректный цвет (4 цифры) для обоих роликов';
+copyStatus.className = 'copy-status error';
+} else {
+copyStatus.textContent = '';
+copyStatus.className = 'copy-status';
+}
+return allValid;
+}
+
+function resetResults() {
+rollTopWeight.innerHTML = '0.00 <small>т</small>';
+rollTopMeters.innerHTML = '0 <small>п.м</small>';
+rollBottomWeight.innerHTML = '0.00 <small>т</small>';
+rollBottomMeters.innerHTML = '0 <small>п.м</small>';
+resultText.value = '';
+copyBtn.disabled = true;
+copyStatus.textContent = '';
+copyStatus.className = 'copy-status';
+}
+
+function calculate() {
+let widthMm = parseFloat(widthSelect.value) || 1250;
+let areaM2 = parseFloat(areaInput.value) || 0;
+let panelType = panelTypeSelect.value || 'wall';
+let classValue = classSelect.value || 'gost1';
+if (areaM2 < 0) areaM2 = 0;
+let topThickness = parseFloat(topThicknessSelect.value) || 0.50;
+let bottomThickness = parseFloat(bottomThicknessSelect.value) || 0.50;
+let topColor = topColorInput.value || '';
+let bottomColor = bottomColorInput.value || '';
+
+// Ограничение 250 м² для ВСЕХ типов панелей
+if (areaM2 < 250 && areaM2 > 0) {
+    // Если сообщение еще не отображается, меняем текст на случайный
+    if (warningMessage.style.display !== 'block') {
+        const phrase = getRandomWarning();
+        document.getElementById('warningText').innerHTML = phrase.main;
+        const subElement = document.getElementById('warningSub');
+        if (subElement && phrase.sub) {
+            subElement.innerHTML = phrase.sub + ' <br><span class="highlight-num" style="font-size: 1.2rem; margin-top: 4px; display: inline-block;">Минимальный объем: 250 м²</span>';
+        }
+    }
+    warningMessage.style.display = 'block';
+    resetResults();
+    return;
+} else {
+    warningMessage.style.display = 'none';
+}
+
+const volumeForStop = areaM2;
+const stopPm = getStopValue(panelType, volumeForStop);
+stopDisplay.value = `${stopPm}`;
+
+let topWidthMm = 1250;
+let bottomWidthMm = widthMm;
+if (panelType === 'wall') {
+topWidthMm = widthMm;
+bottomWidthMm = widthMm;
+}
+const topWidthM = topWidthMm / 1000;
+const bottomWidthM = bottomWidthMm / 1000;
+
+let meters = 0;
+if (panelType === 'roof') {
+meters = Math.round((areaM2 + stopPm) * 100) / 100;
+} else {
+if (widthMm === 1060) {
+meters = Math.round((areaM2 + stopPm) * 100) / 100;
+} else if (widthMm === 1250) {
+meters = Math.round(((areaM2 / 1.19) + stopPm) * 100) / 100;
+}
+}
+
+const topWeightPerLinearMeter = topWidthM * topThickness * DENSITY;
+const topTotalKg = meters * topWeightPerLinearMeter;
+const topTonnes = Math.round((topTotalKg / 1000) * 100) / 100;
+
+const bottomWeightPerLinearMeter = bottomWidthM * bottomThickness * DENSITY;
+const bottomTotalKg = meters * bottomWeightPerLinearMeter;
+const bottomTonnes = Math.round((bottomTotalKg / 1000) * 100) / 100;
+
+rollTopWeight.innerHTML = `${topTonnes.toFixed(2)} <small>т</small>`;
+rollTopMeters.innerHTML = `${meters.toFixed(2)} <small>п.м</small>`;
+rollTopWidth.innerHTML = `${topWidthMm} <span class="orange">мм</span>`;
+rollBottomWeight.innerHTML = `${bottomTonnes.toFixed(2)} <small>т</small>`;
+rollBottomMeters.innerHTML = `${meters.toFixed(2)} <small>п.м</small>`;
+rollBottomWidth.innerHTML = `${bottomWidthMm} <span class="orange">мм</span>`;
+
+if (panelType === 'roof') {
+rollTopUseful.textContent = 'Полезная ширина: 1000 мм (250 мм на нахлёст)';
+rollBottomUseful.textContent = 'Полезная ширина: 1000 мм (60 мм на замок)';
+} else {
+rollTopUseful.textContent = `Полезная ширина: ${widthMm} мм`;
+rollBottomUseful.textContent = `Полезная ширина: ${widthMm} мм`;
+}
+
+const message = buildMessage(
+panelType, areaM2, stopPm,
+topWidthMm, topThickness, topColor, topTonnes, meters,
+bottomWidthMm, bottomThickness, bottomColor, bottomTonnes, meters,
+classValue
+);
+resultText.value = message;
+validateColors();
+}
+
+function copyResult() {
+if (copyBtn.disabled) return;
+const text = resultText.value;
+if (!text) {
+copyStatus.textContent = 'Нет данных для копирования';
+copyStatus.className = 'copy-status error';
+return;
+}
+navigator.clipboard.writeText(text).then(() => {
+copyStatus.textContent = '✅ Скопировано!';
+copyStatus.className = 'copy-status success';
+copyBtn.textContent = '✅ Скопировано!';
+copyBtn.classList.add('copied');
+setTimeout(() => {
+copyStatus.textContent = '';
+copyStatus.className = 'copy-status';
+copyBtn.textContent = '📋 Копировать результат';
+copyBtn.classList.remove('copied');
+}, 3000);
+}).catch(() => {
+const textarea = document.createElement('textarea');
+textarea.value = text;
+document.body.appendChild(textarea);
+textarea.select();
+document.execCommand('copy');
+document.body.removeChild(textarea);
+copyStatus.textContent = '✅ Скопировано!';
+copyStatus.className = 'copy-status success';
+copyBtn.textContent = '✅ Скопировано!';
+copyBtn.classList.add('copied');
+setTimeout(() => {
+copyStatus.textContent = '';
+copyStatus.className = 'copy-status';
+copyBtn.textContent = '📋 Копировать результат';
+copyBtn.classList.remove('copied');
+}, 3000);
+});
+}
+
+function updateWidthOptions() {
+const panelType = panelTypeSelect.value;
+const options = widthSelect.options;
+if (panelType === 'roof') {
+for (let i = 0; i < options.length; i++) {
+if (options[i].value === '1250') {
+options[i].style.display = 'none';
+if (widthSelect.value === '1250') {
+widthSelect.value = '1060';
+}
+break;
+}
+}
+} else {
+for (let i = 0; i < options.length; i++) {
+if (options[i].value === '1250') {
+options[i].style.display = '';
+break;
+}
+}
+}
+calculate();
+}
+
+widthSelect.addEventListener('change', calculate);
+areaInput.addEventListener('input', calculate);
+panelTypeSelect.addEventListener('change', updateWidthOptions);
+classSelect.addEventListener('change', calculate);
+topThicknessSelect.addEventListener('change', calculate);
+bottomThicknessSelect.addEventListener('change', calculate);
+topColorInput.addEventListener('input', calculate);
+bottomColorInput.addEventListener('input', calculate);
+copyBtn.addEventListener('click', copyResult);
+updateWidthOptions();
+})();
+</script>
+</body>
+</html>
