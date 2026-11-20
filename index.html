@@ -4,6 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>Калькулятор металла для сэндвич-панелей</title>
+<!-- Запрет индексации в поисковиках -->
+<meta name="robots" content="noindex, nofollow">
 
 <!-- Yandex.Metrika counter -->
 <script type="text/javascript" >
@@ -27,7 +29,17 @@
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
 body { background: #f5f0eb; display: flex; justify-content: center; padding: 30px 20px; min-height: 100vh; align-items: center; }
-.container { max-width: 900px; width: 100%; background: #ffffff; border-radius: 40px; padding: 40px 38px; box-shadow: 0 20px 40px -12px rgba(0,0,0,0.2); border: 1px solid #e6ddd5; }
+
+/* Стили для экрана блокировки */
+.login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; background: #ffffff; border-radius: 40px; padding: 50px 40px; box-shadow: 0 20px 40px -12px rgba(0,0,0,0.2); border: 1px solid #e6ddd5; max-width: 400px; width: 100%; text-align: center; }
+.login-screen h2 { color: #1a1a1a; margin-bottom: 20px; font-size: 1.5rem; }
+.login-screen input { width: 100%; padding: 14px 18px; font-size: 1rem; border: 1.5px solid #d5cdc4; border-radius: 40px; outline: none; margin-bottom: 15px; text-align: center; }
+.login-screen input:focus { border-color: #e65c1e; }
+.login-screen button { background: #e65c1e; color: #fff; border: none; padding: 14px 30px; border-radius: 40px; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%; transition: 0.15s; }
+.login-screen button:hover { background: #cc4d0f; }
+.login-error { color: #e63e1e; font-size: 0.9rem; margin-top: 10px; display: none; }
+
+.container { max-width: 900px; width: 100%; background: #ffffff; border-radius: 40px; padding: 40px 38px; box-shadow: 0 20px 40px -12px rgba(0,0,0,0.2); border: 1px solid #e6ddd5; display: none; /* Скрыто до ввода пароля */ }
 .header { display: flex; align-items: center; gap: 14px; margin-bottom: 4px; flex-wrap: wrap; }
 .header .logo-icon { font-size: 2rem; font-weight: 700; color: #e65c1e; background: #1a1a1a; padding: 4px 16px 4px 14px; border-radius: 60px; letter-spacing: -0.5px; line-height: 1.2; }
 .header .logo-icon span { color: #ffffff; }
@@ -117,7 +129,18 @@ body { background: #f5f0eb; display: flex; justify-content: center; padding: 30p
 </style>
 </head>
 <body>
-<div class="container">
+
+<!-- Экран блокировки (показывается первым) -->
+<div class="login-screen" id="loginScreen">
+    <h2>Вход в калькулятор</h2>
+    <p style="margin-bottom: 15px; color: #8a7e72; font-size: 0.9rem;">Введите пароль для доступа</p>
+    <input type="password" id="passwordInput" placeholder="Пароль" onkeypress="if(event.key === 'Enter') checkPassword()">
+    <button onclick="checkPassword()">Войти</button>
+    <div class="login-error" id="loginError">Неверный пароль. Попробуйте снова.</div>
+</div>
+
+<!-- Основной калькулятор (скрыт до ввода пароля) -->
+<div class="container" id="mainCalculator">
 <div class="header">
 <div class="logo-icon"><span>СОФТ</span> ПАЙП</div>
 <div class="company-name">Калькулятор металла</div>
@@ -233,7 +256,34 @@ body { background: #f5f0eb; display: flex; justify-content: center; padding: 30p
 </div>
 </div>
 </div>
+
 <script>
+// ==========================================
+// СИСТЕМА ПАРОЛЯ
+// ==========================================
+// Поменяйте 'sofpipes2026' на нужный вам пароль
+const CORRECT_PASSWORD = "sofpipes2026";
+
+// Проверяем, не вводил ли пользователь пароль ранее (чтобы не спрашивать каждый раз при обновлении страницы)
+if (sessionStorage.getItem('isLoggedIn') === 'true') {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainCalculator').style.display = 'block';
+}
+
+function checkPassword() {
+    const input = document.getElementById('passwordInput').value;
+    if (input === CORRECT_PASSWORD) {
+        // Запоминаем вход в текущей сессии (до закрытия вкладки)
+        sessionStorage.setItem('isLoggedIn', 'true');
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('mainCalculator').style.display = 'block';
+    } else {
+        document.getElementById('loginError').style.display = 'block';
+        document.getElementById('passwordInput').value = '';
+    }
+}
+// ==========================================
+
 (function() {
 const widthSelect = document.getElementById('widthSelect');
 const areaInput = document.getElementById('areaInput');
@@ -261,8 +311,8 @@ const DENSITY = 7.85;
 // ==========================================
 // ВЕРСИЯ И ДАТА РЕЛИЗА (меняйте вручную)
 // ==========================================
-const version = "1";
-const releaseDate = "19.11.26"; 
+const version = "2";
+const releaseDate = "20.11.26"; 
 document.getElementById('versionInfo').textContent = `ver. ${version} от ${releaseDate}`;
 // ==========================================
 
@@ -344,10 +394,10 @@ ${zincText}
 Площадь: ${areaM2} м²
 🔼 Ролик Верх (${topWidthMm} мм, ${topThickStr} мм, цвет: ${topColorDisplay})
 Вес: ${topTonnes.toFixed(2)} т
-П.м: ${topMeters.toFixed(2)} п.м
+П.м: ${topMeters} п.м
 🔽 Ролик Низ (${bottomWidthMm} мм, ${bottomThickStr} мм, цвет: ${bottomColorDisplay})
 Вес: ${bottomTonnes.toFixed(2)} т
-П.м: ${bottomMeters.toFixed(2)} п.м`;
+П.м: ${bottomMeters} п.м`;
 }
 
 function validateColors() {
@@ -393,7 +443,6 @@ let bottomColor = bottomColorInput.value || '';
 
 // Ограничение 250 м² для ВСЕХ типов панелей
 if (areaM2 < 250 && areaM2 > 0) {
-    // Если сообщение еще не отображается, меняем текст на случайный
     if (warningMessage.style.display !== 'block') {
         const phrase = getRandomWarning();
         document.getElementById('warningText').innerHTML = phrase.main;
@@ -422,15 +471,16 @@ bottomWidthMm = widthMm;
 const topWidthM = topWidthMm / 1000;
 const bottomWidthM = bottomWidthMm / 1000;
 
+// ✅ ИЗМЕНЕНО: Округление погонных метров ВСЕГДА в большую сторону (Math.ceil)
 let meters = 0;
 if (panelType === 'roof') {
-meters = Math.round((areaM2 + stopPm) * 100) / 100;
+    meters = Math.ceil(areaM2 + stopPm);
 } else {
-if (widthMm === 1060) {
-meters = Math.round((areaM2 + stopPm) * 100) / 100;
-} else if (widthMm === 1250) {
-meters = Math.round(((areaM2 / 1.19) + stopPm) * 100) / 100;
-}
+    if (widthMm === 1060) {
+        meters = Math.ceil(areaM2 + stopPm);
+    } else if (widthMm === 1250) {
+        meters = Math.ceil((areaM2 / 1.19) + stopPm);
+    }
 }
 
 const topWeightPerLinearMeter = topWidthM * topThickness * DENSITY;
@@ -442,10 +492,10 @@ const bottomTotalKg = meters * bottomWeightPerLinearMeter;
 const bottomTonnes = Math.round((bottomTotalKg / 1000) * 100) / 100;
 
 rollTopWeight.innerHTML = `${topTonnes.toFixed(2)} <small>т</small>`;
-rollTopMeters.innerHTML = `${meters.toFixed(2)} <small>п.м</small>`;
+rollTopMeters.innerHTML = `${meters} <small>п.м</small>`;
 rollTopWidth.innerHTML = `${topWidthMm} <span class="orange">мм</span>`;
 rollBottomWeight.innerHTML = `${bottomTonnes.toFixed(2)} <small>т</small>`;
-rollBottomMeters.innerHTML = `${meters.toFixed(2)} <small>п.м</small>`;
+rollBottomMeters.innerHTML = `${meters} <small>п.м</small>`;
 rollBottomWidth.innerHTML = `${bottomWidthMm} <span class="orange">мм</span>`;
 
 if (panelType === 'roof') {
