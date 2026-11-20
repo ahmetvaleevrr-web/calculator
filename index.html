@@ -4,6 +4,26 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>Калькулятор металла для сэндвич-панелей</title>
+
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript" >
+   (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+   m[i].l=1*new Date();
+   for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+   k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+   (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+
+   ym(114364810, "init", {
+        clickmap:true,
+        trackLinks:true,
+        accurateTrackBounce:true,
+        webvisor:true,
+        ecommerce:"dataLayer"
+   });
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/114364810" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
+
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
 body { background: #f5f0eb; display: flex; justify-content: center; padding: 30px 20px; min-height: 100vh; align-items: center; }
@@ -372,7 +392,7 @@ let topColor = topColorInput.value || '';
 let bottomColor = bottomColorInput.value || '';
 
 // Ограничение 250 м² для ВСЕХ типов панелей
-if (areaM2 < 100 && areaM2 > 0) {
+if (areaM2 < 250 && areaM2 > 0) {
     // Если сообщение еще не отображается, меняем текст на случайный
     if (warningMessage.style.display !== 'block') {
         const phrase = getRandomWarning();
