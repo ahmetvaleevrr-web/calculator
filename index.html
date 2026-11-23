@@ -430,89 +430,87 @@ copyStatus.className = 'copy-status';
 }
 
 function calculate() {
-let widthMm = parseFloat(widthSelect.value) || 1250;
-let areaM2 = parseFloat(areaInput.value) || 0;
-let panelType = panelTypeSelect.value || 'wall';
-let classValue = classSelect.value || 'gost1';
-if (areaM2 < 0) areaM2 = 0;
-let topThickness = parseFloat(topThicknessSelect.value) || 0.50;
-let bottomThickness = parseFloat(bottomThicknessSelect.value) || 0.50;
-let topColor = topColorInput.value || '';
-let bottomColor = bottomColorInput.value || '';
+    let widthMm = parseFloat(widthSelect.value) || 1250;
+    let areaM2 = parseFloat(areaInput.value) || 0;
+    let panelType = panelTypeSelect.value || 'wall';
+    let classValue = classSelect.value || 'gost1';
+    if (areaM2 < 0) areaM2 = 0;
+    let topThickness = parseFloat(topThicknessSelect.value) || 0.50;
+    let bottomThickness = parseFloat(bottomThicknessSelect.value) || 0.50;
+    let topColor = topColorInput.value || '';
+    let bottomColor = bottomColorInput.value || '';
 
-// Ограничение 250 м² для ВСЕХ типов панелей
-if (areaM2 < 100 && areaM2 > 0) {
-    if (warningMessage.style.display !== 'block') {
-        const phrase = getRandomWarning();
-        document.getElementById('warningText').innerHTML = phrase.main;
-        const subElement = document.getElementById('warningSub');
-        if (subElement && phrase.sub) {
-            subElement.innerHTML = phrase.sub + ' <br><span class="highlight-num" style="font-size: 1.2rem; margin-top: 4px; display: inline-block;">Минимальный объем: 100 м²</span>';
+    // Проверка площади: если меньше 250, ПОКАЗЫВАЕМ предупреждение, но НЕ прерываем расчет
+    if (areaM2 < 250 && areaM2 > 0) {
+        if (warningMessage.style.display !== 'block') {
+            const phrase = getRandomWarning();
+            document.getElementById('warningText').innerHTML = phrase.main;
+            const subElement = document.getElementById('warningSub');
+            if (subElement && phrase.sub) {
+                subElement.innerHTML = phrase.sub + ' <br><span class="highlight-num" style="font-size: 1.2rem; margin-top: 4px; display: inline-block;">Минимальный объем: 250 м²</span>';
+            }
+        }
+        warningMessage.style.display = 'block';
+    } else {
+        warningMessage.style.display = 'none';
+    }
+
+    const volumeForStop = areaM2;
+    const stopPm = getStopValue(panelType, volumeForStop);
+    stopDisplay.value = `${stopPm}`;
+
+    let topWidthMm = 1250;
+    let bottomWidthMm = widthMm;
+    if (panelType === 'wall') {
+        topWidthMm = widthMm;
+        bottomWidthMm = widthMm;
+    }
+    const topWidthM = topWidthMm / 1000;
+    const bottomWidthM = bottomWidthMm / 1000;
+
+    // Погонные метры (округление в большую сторону)
+    let meters = 0;
+    if (panelType === 'roof') {
+        meters = Math.ceil(areaM2 + stopPm);
+    } else {
+        if (widthMm === 1060) {
+            meters = Math.ceil(areaM2 + stopPm);
+        } else if (widthMm === 1250) {
+            meters = Math.ceil((areaM2 / 1.19) + stopPm);
         }
     }
-    warningMessage.style.display = 'block';
-    resetResults();
-    return;
-} else {
-    warningMessage.style.display = 'none';
-}
 
-const volumeForStop = areaM2;
-const stopPm = getStopValue(panelType, volumeForStop);
-stopDisplay.value = `${stopPm}`;
+    const topWeightPerLinearMeter = topWidthM * topThickness * DENSITY;
+    const topTotalKg = meters * topWeightPerLinearMeter;
+    const topTonnes = Math.round((topTotalKg / 1000) * 100) / 100;
 
-let topWidthMm = 1250;
-let bottomWidthMm = widthMm;
-if (panelType === 'wall') {
-topWidthMm = widthMm;
-bottomWidthMm = widthMm;
-}
-const topWidthM = topWidthMm / 1000;
-const bottomWidthM = bottomWidthMm / 1000;
+    const bottomWeightPerLinearMeter = bottomWidthM * bottomThickness * DENSITY;
+    const bottomTotalKg = meters * bottomWeightPerLinearMeter;
+    const bottomTonnes = Math.round((bottomTotalKg / 1000) * 100) / 100;
 
-// ✅ ИЗМЕНЕНО: Округление погонных метров ВСЕГДА в большую сторону (Math.ceil)
-let meters = 0;
-if (panelType === 'roof') {
-    meters = Math.ceil(areaM2 + stopPm);
-} else {
-    if (widthMm === 1060) {
-        meters = Math.ceil(areaM2 + stopPm);
-    } else if (widthMm === 1250) {
-        meters = Math.ceil((areaM2 / 1.19) + stopPm);
+    rollTopWeight.innerHTML = `${topTonnes.toFixed(2)} <small>т</small>`;
+    rollTopMeters.innerHTML = `${meters} <small>п.м</small>`;
+    rollTopWidth.innerHTML = `${topWidthMm} <span class="orange">мм</span>`;
+    rollBottomWeight.innerHTML = `${bottomTonnes.toFixed(2)} <small>т</small>`;
+    rollBottomMeters.innerHTML = `${meters} <small>п.м</small>`;
+    rollBottomWidth.innerHTML = `${bottomWidthMm} <span class="orange">мм</span>`;
+
+    if (panelType === 'roof') {
+        rollTopUseful.textContent = 'Полезная ширина: 1000 мм (250 мм на нахлёст)';
+        rollBottomUseful.textContent = 'Полезная ширина: 1000 мм (60 мм на замок)';
+    } else {
+        rollTopUseful.textContent = `Полезная ширина: ${widthMm} мм`;
+        rollBottomUseful.textContent = `Полезная ширина: ${widthMm} мм`;
     }
-}
 
-const topWeightPerLinearMeter = topWidthM * topThickness * DENSITY;
-const topTotalKg = meters * topWeightPerLinearMeter;
-const topTonnes = Math.round((topTotalKg / 1000) * 100) / 100;
-
-const bottomWeightPerLinearMeter = bottomWidthM * bottomThickness * DENSITY;
-const bottomTotalKg = meters * bottomWeightPerLinearMeter;
-const bottomTonnes = Math.round((bottomTotalKg / 1000) * 100) / 100;
-
-rollTopWeight.innerHTML = `${topTonnes.toFixed(2)} <small>т</small>`;
-rollTopMeters.innerHTML = `${meters} <small>п.м</small>`;
-rollTopWidth.innerHTML = `${topWidthMm} <span class="orange">мм</span>`;
-rollBottomWeight.innerHTML = `${bottomTonnes.toFixed(2)} <small>т</small>`;
-rollBottomMeters.innerHTML = `${meters} <small>п.м</small>`;
-rollBottomWidth.innerHTML = `${bottomWidthMm} <span class="orange">мм</span>`;
-
-if (panelType === 'roof') {
-rollTopUseful.textContent = 'Полезная ширина: 1000 мм (250 мм на нахлёст)';
-rollBottomUseful.textContent = 'Полезная ширина: 1000 мм (60 мм на замок)';
-} else {
-rollTopUseful.textContent = `Полезная ширина: ${widthMm} мм`;
-rollBottomUseful.textContent = `Полезная ширина: ${widthMm} мм`;
-}
-
-const message = buildMessage(
-panelType, areaM2, stopPm,
-topWidthMm, topThickness, topColor, topTonnes, meters,
-bottomWidthMm, bottomThickness, bottomColor, bottomTonnes, meters,
-classValue
-);
-resultText.value = message;
-validateColors();
+    const message = buildMessage(
+        panelType, areaM2, stopPm,
+        topWidthMm, topThickness, topColor, topTonnes, meters,
+        bottomWidthMm, bottomThickness, bottomColor, bottomTonnes, meters,
+        classValue
+    );
+    resultText.value = message;
+    validateColors();
 }
 
 function copyResult() {
