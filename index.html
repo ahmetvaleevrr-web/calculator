@@ -261,7 +261,6 @@ body { background: #f5f0eb; display: flex; justify-content: center; padding: 30p
 // ==========================================
 // СИСТЕМА ПАРОЛЯ
 // ==========================================
-// Поменяйте 'sofpipes2026' на нужный вам пароль
 const CORRECT_PASSWORD = "Soft2026";
 
 // Проверяем, не вводил ли пользователь пароль ранее (чтобы не спрашивать каждый раз при обновлении страницы)
@@ -323,7 +322,7 @@ const warningPhrases = [
     { main: "🚨 Одумайтесь, пока не поздно!", sub: "Мы, конечно, любим сложные задачи, но не настолько." },
     { main: "🚨 Экономика заказа под угрозой!", sub: "Запускать станок ради пары метров — это смело, но мы так не работаем." },
     { main: "🚨 Вы уверены, что это не ошибка?", sub: "Давайте не будем будить производство ради такого объема." },
-    { main: "🚨 Одумайтесь! Это же производство, а не песочница.", sub: "В производство запускается заказ не меньше 250 м²." }
+    { main: "🚨 Одумайтесь! Это же производство, а не песочница.", sub: "В производство запускается заказ не меньше 100 м²." }
 ];
 
 function getRandomWarning() {
@@ -442,13 +441,13 @@ let topColor = topColorInput.value || '';
 let bottomColor = bottomColorInput.value || '';
 
 // Ограничение 250 м² для ВСЕХ типов панелей
-if (areaM2 < 250 && areaM2 > 0) {
+if (areaM2 < 100 && areaM2 > 0) {
     if (warningMessage.style.display !== 'block') {
         const phrase = getRandomWarning();
         document.getElementById('warningText').innerHTML = phrase.main;
         const subElement = document.getElementById('warningSub');
         if (subElement && phrase.sub) {
-            subElement.innerHTML = phrase.sub + ' <br><span class="highlight-num" style="font-size: 1.2rem; margin-top: 4px; display: inline-block;">Минимальный объем: 250 м²</span>';
+            subElement.innerHTML = phrase.sub + ' <br><span class="highlight-num" style="font-size: 1.2rem; margin-top: 4px; display: inline-block;">Минимальный объем: 100 м²</span>';
         }
     }
     warningMessage.style.display = 'block';
