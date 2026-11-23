@@ -441,13 +441,13 @@ function calculate() {
     let bottomColor = bottomColorInput.value || '';
 
     // Проверка площади: если меньше 250, ПОКАЗЫВАЕМ предупреждение, но НЕ прерываем расчет
-    if (areaM2 < 250 && areaM2 > 0) {
+    if (areaM2 < 100 && areaM2 > 0) {
         if (warningMessage.style.display !== 'block') {
             const phrase = getRandomWarning();
             document.getElementById('warningText').innerHTML = phrase.main;
             const subElement = document.getElementById('warningSub');
             if (subElement && phrase.sub) {
-                subElement.innerHTML = phrase.sub + ' <br><span class="highlight-num" style="font-size: 1.2rem; margin-top: 4px; display: inline-block;">Минимальный объем: 250 м²</span>';
+                subElement.innerHTML = phrase.sub + ' <br><span class="highlight-num" style="font-size: 1.2rem; margin-top: 4px; display: inline-block;">Минимальный объем: 100 м²</span>';
             }
         }
         warningMessage.style.display = 'block';
